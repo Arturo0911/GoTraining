@@ -95,4 +95,19 @@ func main() {
 
 	fmt.Println("hello go")
 
+	// Exist a lot of ways to built an array(data structured)
+
+	var space [256]int
+
+	for x := 0; x < 256; x++ {
+
+		space[x] = x
+	}
+
+	fmt.Println(space)
+
+	slice := space[100:150]
+
+	fmt.Println(slice)
+
 }
