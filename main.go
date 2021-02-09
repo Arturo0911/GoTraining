@@ -38,13 +38,26 @@ func findPrimeNumber(number int) bool {
 
 }
 
-func createArray(size int) [10]int {
+func createArray() [10]int {
 
 	var array [10]int
 	for x := 0; x < 10; x++ {
 
 		array[x] = x
 	}
+
+	return array
+
+}
+
+func updateArray(array [10]int, newValue int, position int) [10]int {
+
+	if position >= 10 {
+
+		return array
+	}
+
+	array[position] = newValue
 
 	return array
 
@@ -75,7 +88,11 @@ func main() {
 
 	}
 
-	fmt.Println(createArray(5))
+	array := createArray()
+
+	fmt.Println(array)
+	fmt.Println(updateArray(array, 25, 8))
 
 	fmt.Println("hello go")
+
 }
