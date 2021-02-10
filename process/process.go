@@ -6,10 +6,10 @@ func main() {
 	fmt.Println("vim-go")
 
 	var valor int
+	suma := 0
 
 	for {
 
-		suma := 0
 		fmt.Println("Input 0 to finish the loop")
 		fmt.Scan(&valor)
 
@@ -21,6 +21,6 @@ func main() {
 
 	}
 
-	fmt.Println("El valor de la suma de todos los números es: ", valor)
+	fmt.Println("El valor de la suma de todos los números es: ", suma)
 
 }

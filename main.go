@@ -65,9 +65,38 @@ func updateArray(array [10]int, newValue int, position int) [10]int {
 
 func main() {
 
-	/*var name string
-	fmt.Scan(&name)
-	*/
+	// maps
+
+	//countries := make(map[string]int)
+
+	var skills = make(map[string]string)
+
+	skills["Java"] = "Backend"
+	skills["Python"] = "Machine learning"
+	skills["GraphQL"] = "Data transporting"
+	skills["Arduino"] = "Robotic"
+
+	var agesPerPerson = make(map[int]string)
+
+	agesPerPerson[28] = "Arturon"
+	agesPerPerson[43] = "Ines"
+	agesPerPerson[41] = "Favio"
+
+	fmt.Println(agesPerPerson)
+
+	/*countries["Ecuador"] = 1
+	countries["Peru"] = 2
+
+	fmt.Println(countries)
+	fmt.Println(len(countries))*/
+
+	fmt.Println(skills)
+
+}
+
+/*func main() {
+
+
 
 	value, name := sumNumbers(25)
 
@@ -110,4 +139,4 @@ func main() {
 
 	fmt.Println(slice)
 
-}
+}*/
