@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 /*
 * Specify what kind of value will be return the function
@@ -14,6 +17,19 @@ func sumNumbers(number int) (int, string) {
 func showNames(name string) string {
 
 	return "Hello " + name + " it's a pleasure to meet you"
+}
+
+func declareArray(size int) []int {
+
+	slice := make([]int, size)
+
+	for i := 0; i < size; i++ {
+
+		slice[i] = i
+	}
+
+	return slice
+
 }
 
 func findPrimeNumber(number int) bool {
@@ -63,11 +79,41 @@ func updateArray(array [10]int, newValue int, position int) [10]int {
 
 }
 
+func searchPrimeNumbers(rangeNumber int) []int {
+
+	primeList := make([]int, rangeNumber)
+	position := 0
+	for i := 2; i < rangeNumber; i++ {
+		counter := 0
+		for j := 2; j < rangeNumber; j++ {
+
+			if i%j == 0 {
+
+				counter++
+			}
+
+		}
+
+		if counter < 2 {
+
+			primeList[position] = i
+			position++
+
+		}
+
+	}
+
+	return primeList
+
+}
+
 func main() {
 
 	// maps
 
 	//countries := make(map[string]int)
+
+	fmt.Println(searchPrimeNumbers(1000))
 
 	var skills = make(map[string]string)
 
@@ -84,13 +130,44 @@ func main() {
 
 	fmt.Println(agesPerPerson)
 
+	for a, b := range agesPerPerson {
+
+		fmt.Println("key: ", a, " value: ", b)
+	}
+
 	/*countries["Ecuador"] = 1
 	countries["Peru"] = 2
 
 	fmt.Println(countries)
 	fmt.Println(len(countries))*/
 
-	fmt.Println(skills)
+	fmt.Println(reflect.TypeOf(skills))
+
+	// declare a slice
+
+	quantity := 5
+	bills := make([]int, quantity)
+
+	for i := 0; i < 5; i++ {
+
+		bills[i] = i
+	}
+
+	fmt.Println(bills)
+	fmt.Println(reflect.TypeOf(bills))
+
+	var array [5]int
+
+	for x := 0; x < 5; x++ {
+
+		array[x] = x
+	}
+
+	fmt.Println(array)
+	fmt.Println(reflect.TypeOf(array))
+
+	fmt.Println(declareArray(25))
+	fmt.Println(reflect.TypeOf(declareArray(25)))
 
 }
 
