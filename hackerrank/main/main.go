@@ -8,12 +8,12 @@ import (
 
 func main() {
 
-	scanner := bufio.NewScanner(os.Stdin)
+	var name string
+	in := bufio.NewReader(os.Stdin)
+	name = in.ReadString()
+	fmt.Println(name)
+	//var names string
+	//var address string
 
-	var names string
-	var address string
-	scanner.Scan()
-	names = scanner.Text()
-	address = scanner.Text()
-	fmt.Println(names, " vive en: ", address)
+	//fmt.Println(names, " vive en: ", address)
 }
