@@ -25,7 +25,7 @@ func main() {
 
 	for x := 1; x < len(splited)-2; x++ {
 
-		if splited[len(splited)-2] == "A" && splited[0] != "1" {
+		if splited[len(splited)-2] == "P" && splited[1] != "2" {
 
 			finalHour = splited[0] + splited[1] + splited[2] + splited[3] + splited[4] + splited[5] + splited[6] + splited[7]
 			break
