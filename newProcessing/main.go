@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"time"
 
-	"./user"
+	us "./user"
 )
 
-/*type userOne struct {
+type userOne struct {
 	us.User
-}*/
+}
 
 func main() {
 
-	newUser := new(user.User)
+	newUser := new(userOne)
 	newUser.HIghUser(1, "Arturo Negreiros", time.Now(), true)
 	fmt.Println(newUser)
 }
