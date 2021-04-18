@@ -1,8 +1,12 @@
 package main
 
+/**
+ * @author Arturo Negreiros
+ * @origin Black hat with Go
+ */
+
+
 /*
-
-
 The first step in creating the port scanner is understanding how
 to initiate a connection from a client to a server. Throughout
 this example, you’ll be connecting to and scanning
@@ -20,19 +24,44 @@ to which you wish to connect. Notice it’s a single string, not a
 string and an int. For IPv4/TCP connections, this string will take
 the form of host:port. For example, if you wanted to connect to
 scanme.nmap.org on TCP port 80, you would supply
-
-
 */
 
 import (
 	"fmt"
-	"net"
+	//"net"
 	"sync"
 )
 
+
+func workers(ports chan int, wg *sync.WaitGroup){
+
+
+	for p:= range ports{
+
+		fmt.Println(p)
+		wg.Done()
+	}
+}
+
+
+
 func main() {
 
+	ports := make(chan int, 100)
 	var wg sync.WaitGroup
+
+	for i:=0; i < cap(ports); i++ {
+		go workers(ports, &wg)
+	}
+
+	for i:=1; i <= 1024; i++ {
+		wg.Add(1)
+		ports <- i
+	}
+	wg.Wait()
+	close(ports)
+
+	/*var wg sync.WaitGroup
 
 	for i := 1; i < 65535; i++ {
 
@@ -51,5 +80,5 @@ func main() {
 
 	}
 
-	wg.Wait()
+	wg.Wait()*/
 }
