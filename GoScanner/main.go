@@ -5,7 +5,6 @@ package main
  * @origin Black hat with Go
  */
 
-
 /*
 The first step in creating the port scanner is understanding how
 to initiate a connection from a client to a server. Throughout
@@ -28,43 +27,25 @@ scanme.nmap.org on TCP port 80, you would supply
 
 import (
 	"fmt"
+	"net"
+
 	//"net"
 	"sync"
 )
 
+func workers(ports chan int, wg *sync.WaitGroup) {
 
-func workers(ports chan int, wg *sync.WaitGroup){
-
-
-	for p:= range ports{
+	for p := range ports {
 
 		fmt.Println(p)
 		wg.Done()
 	}
 }
 
+func VeryFastScanner(host string) {
 
-
-func main() {
-
-	ports := make(chan int, 100)
 	var wg sync.WaitGroup
-
-	for i:=0; i < cap(ports); i++ {
-		go workers(ports, &wg)
-	}
-
-	for i:=1; i <= 1024; i++ {
-		wg.Add(1)
-		ports <- i
-	}
-	wg.Wait()
-	close(ports)
-
-	/*var wg sync.WaitGroup
-
-	for i := 1; i < 65535; i++ {
-
+	for i := 1; i <= 65535; i++ {
 		wg.Add(1)
 		go func(j int) {
 			defer wg.Done()
@@ -75,10 +56,26 @@ func main() {
 				return
 			}
 			connection.Close()
-			fmt.Printf("%d open\n", j)
+			fmt.Printf("%d\n open", j)
 		}(i)
 
+		wg.Wait()
+	}
+}
+
+func main() {
+
+	ports := make(chan int, 100)
+	var wg sync.WaitGroup
+
+	for i := 0; i < cap(ports); i++ {
+		go workers(ports, &wg)
 	}
 
-	wg.Wait()*/
+	for i := 1; i <= 1024; i++ {
+		wg.Add(1)
+		ports <- i
+	}
+	wg.Wait()
+	close(ports)
 }
