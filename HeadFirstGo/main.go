@@ -38,10 +38,18 @@ func getStrings(fileName string) ([]string, error) {
 func main() {
 
 	fileLines, err := getStrings("golang.txt")
-
+	data := [4]int{5, 3, 56, 8}
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(fileLines)
+	for _, value := range data {
+		fmt.Println(value)
+	}
+
+	for _, lines := range fileLines {
+		fmt.Println(lines)
+	}
+
+	//fmt.Println(fileLines)
 }
