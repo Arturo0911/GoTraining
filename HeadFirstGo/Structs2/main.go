@@ -27,4 +27,11 @@ func main(){
 	applyDiscount(&s)
 
 	fmt.Println(s.rate)
+
+	var value int = 2
+
+	var pointer *int = &value
+
+	fmt.Println(pointer)
+	fmt.Println(*pointer)
 }
