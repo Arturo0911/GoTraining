@@ -85,6 +85,13 @@ func Variance(parameterList []float64, y []float64) (float64, float64, float64) 
 
 }
 
+func MakingXArrayValues(dataset [][]string) []float64 {
+
+	var parameterList []float64
+
+	return parameterList
+}
+
 /**
 * @return slices with the data inside
  */
