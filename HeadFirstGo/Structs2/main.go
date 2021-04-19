@@ -11,27 +11,49 @@ type suscriber struct {
 	active 	bool
 }
 
+
+
+func printInformation(s *suscriber){
+
+	fmt.Println("name: ", s.name)
+	fmt.Println("rate: ", s.rate)
+	fmt.Println("active: ", s.active)
+}
+
+
+func loadSuscriber(name string) *suscriber{
+
+	var s suscriber
+	s.name = name
+	s.rate = 5.99
+	s.active = true
+
+	return &s
+
+}
+
+
+
 func applyDiscount(s *suscriber){
 
 	s.rate = 4.99
 }
 
+func banner(){
+	fmt.Println("-------------------------------\n")
+}
 
 
 func main(){
+	banner()
+	suscriber1 := loadSuscriber("Arturo Negreiros")
+	applyDiscount(suscriber1)
 
+	printInformation(suscriber1)
+	banner()
+	suscriber2 := loadSuscriber("Leslie Chavez")
 
-	fmt.Println("hi!!")
-	var s suscriber
+	printInformation(suscriber2)
 
-	applyDiscount(&s)
-
-	fmt.Println(s.rate)
-
-	var value int = 2
-
-	var pointer *int = &value
-
-	fmt.Println(pointer)
-	fmt.Println(*pointer)
+	banner()
 }
