@@ -3,8 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"functions"
 	"os"
+
+	"github.com/Arturo0911/GoTraining/HeadFirstGo/functions"
 )
 
 func getStrings(fileName string) ([]string, error) {
