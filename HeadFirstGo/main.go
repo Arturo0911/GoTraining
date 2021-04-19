@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"functions"
 	"os"
 )
 
@@ -50,6 +51,8 @@ func main() {
 	for _, lines := range fileLines {
 		fmt.Println(lines)
 	}
+
+	functions.Making()
 
 	//fmt.Println(fileLines)
 }
