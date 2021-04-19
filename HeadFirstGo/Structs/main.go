@@ -60,9 +60,24 @@ func cratePart(description string, counter int) part{
 
 	return p
 }
+/*
+* Modifying the value from the struct type, this one
+* should be shiped with the pointer to access the data
+* and modifying it, otherwise, you only gonna modify the copy
+ */
+
+//
+
+type suscribers struct {
+	name string
+	rate float64
+}
 
 
+func changeStruct(s suscribers) {
+	s.name = "Arturo Negreiros"
 
+}
 
 
 
@@ -79,6 +94,16 @@ func loadData() Person{
 
 
 func main(){
+
+
+	var s suscribers
+	changeStruct(s)
+	fmt.Println(s)
+
+
+
+
+	banner()
 
 	fmt.Println("Hii")
 	fmt.Println(loadData())
