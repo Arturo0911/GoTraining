@@ -14,7 +14,7 @@ Implement an algorithm to solve the min distance from the users and followers
 
 For example: from the userA to userM there 3 users of distances ->
 	userA follow userB (1), userB follow userC (2) and userC follow userM(3
-	
+
 
 	return 3
 
@@ -24,56 +24,6 @@ For example: from the userA to userM there 3 users of distances ->
 type UsersFollowers struct {
 	User      string
 	Following []string
-}
-
-func findDistance(users []UsersFollowers, userOrigin string, userDestiny string) {
-	
-	var minDistance int = 0
-	var position int = 0
-	var whoFollow string = ""
-
-	for _, value := range users {
-		
-		if findElement(value.Following, userDestiny) {
-
-			whoFollow =  value.User
-			minDistance ++
-			break
-	
-		}
-		
-		position ++
-
-	}
-
-	/*if whoFollow == userorigin {
-		
-		return minDistance
-		// finish the algrotihm
-
-	}*/
-
-	for _,element := range users {
-
-		if findElement(element.Following, whoFollow){
-			
-			if element.User == userOrigin{
-				
-				minDistance ++
-			}
-
-		}
-
-		
-	}
-
-
-
-
-
-
-	fmt.Println(whoFollow)
-	fmt.Println(minDistance)
 }
 
 func loadUsersFollowers() []UsersFollowers {
@@ -101,14 +51,14 @@ func loadUsersFollowers() []UsersFollowers {
 
 }
 
-func findElement(slice []string, element string) (bool){
-	
+func findElement(slice []string, element string) bool {
+
 	var found bool = false
 	for _, value := range slice {
-		if value == element{
+		if value == element {
 			found = true
 			break
-		}else{
+		} else {
 			continue
 		}
 	}
@@ -117,12 +67,40 @@ func findElement(slice []string, element string) (bool){
 
 }
 
+func findDistance(users []UsersFollowers, userOrigin string, userDestiny string, minDistance int) {
 
+	var whoFollow string = ""
+	var counter int = 0 + minDistance
+	//var usersAdd []string
 
+	maping := make(map[string]int)
+	for _, value := range users {
+
+		if findElement(value.Following, userDestiny) {
+			counter++
+			whoFollow = value.User
+			//usersAdd = append(usersAdd, whoFollow)
+			maping[whoFollow] = counter
+		}
+	}
+
+	if whoFollow == userOrigin {
+
+		fmt.Println(maping)
+		fmt.Println(counter)
+	} else {
+		findDistance(users, userOrigin, whoFollow, counter)
+	}
+
+}
 
 func main() {
 
 	loadUsersFollowers()
 
-	findDistance(loadUsersFollowers(), "userA", "userM")
+	//fmt.Println(findDistance(loadUsersFollowers(), "userA", "userE", 0))
+	//fmt.Println(findDistance(loadUsersFollowers(), "userA", "userM", 0))
+	//findDistance(loadUsersFollowers(), "userA", "userM", 0)
+	//findDistance(loadUsersFollowers(), "userB", "userN", 0)
+	findDistance(loadUsersFollowers(), "userC", "userI", 0)
 }
