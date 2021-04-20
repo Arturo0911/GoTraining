@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 /*
 
@@ -71,25 +74,38 @@ func findDistance(users []UsersFollowers, userOrigin string, userDestiny string,
 
 	var whoFollow string = ""
 	var counter int = 0 + minDistance
-	//var usersAdd []string
 
-	maping := make(map[string]int)
+	maping := make(map[int]string)
 	for _, value := range users {
 
 		if findElement(value.Following, userDestiny) {
 			counter++
 			whoFollow = value.User
-			//usersAdd = append(usersAdd, whoFollow)
-			maping[whoFollow] = counter
+			maping[counter] = whoFollow
 		}
 	}
+	sortArray := make([]int, len(maping))
+	if len(maping) > 1 {
+		i := 0
+		for k := range maping {
+			sortArray[i] = k
+			i++
+		}
 
-	if whoFollow == userOrigin {
+		sort.Ints(sortArray)
+		counter = sortArray[0]
+		if whoFollow == userOrigin {
+			fmt.Println("mininmun distance: ", counter)
 
-		fmt.Println(maping)
-		fmt.Println(counter)
+		} else {
+			findDistance(users, userOrigin, whoFollow, sortArray[0])
+		}
 	} else {
-		findDistance(users, userOrigin, whoFollow, counter)
+		if whoFollow == userOrigin {
+			fmt.Println("mininmun distance: ", counter)
+		} else {
+			findDistance(users, userOrigin, whoFollow, counter)
+		}
 	}
 
 }
@@ -100,7 +116,7 @@ func main() {
 
 	//fmt.Println(findDistance(loadUsersFollowers(), "userA", "userE", 0))
 	//fmt.Println(findDistance(loadUsersFollowers(), "userA", "userM", 0))
-	//findDistance(loadUsersFollowers(), "userA", "userM", 0)
-	//findDistance(loadUsersFollowers(), "userB", "userN", 0)
+	findDistance(loadUsersFollowers(), "userA", "userM", 0)
+	findDistance(loadUsersFollowers(), "userB", "userN", 0)
 	findDistance(loadUsersFollowers(), "userC", "userI", 0)
 }
