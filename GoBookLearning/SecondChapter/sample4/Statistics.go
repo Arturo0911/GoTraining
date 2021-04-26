@@ -45,27 +45,34 @@ func Distributions(pathFile string) {
 	//}
 	//fmt.Println()
 
-	sepalLength := irisDF.Col("sepal_length").Float()
+	petalLength := irisDF.Col("petal_length").Float()
 
-	log.Println(sepalLength)
+	log.Println(petalLength)
 
 	// Calculate theMena of the variable
-	meanVal := stat.Mean(sepalLength, nil)
+	meanVal := stat.Mean(petalLength, nil)
 
 	fmt.Printf("The meaning of value %0.1f\n\n", meanVal)
 
 	// Calculate the Mode of the variable
-	modeVal, modeCount := stat.Mode(sepalLength, nil)
+	modeVal, modeCount := stat.Mode(petalLength, nil)
 
 	fmt.Printf("the mode val: %0.1f and mode count are %0.1f\n\n", modeVal, modeCount)
 
-	medianVal, err := stats.Median(sepalLength)
+	medianVal, err := stats.Median(petalLength)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("The median val is %0.1f\n\n", medianVal)
+	// For all our prupose, we let the decimal length in 2
+	// By default
+
+	fmt.Printf("The median val is %0.2f\n\n", medianVal)
+
+	// Taking the mean and mediam from petal length, we can see
+	// are not close it, that's mean, some values, drawing up or
+	// down
 
 }
 
