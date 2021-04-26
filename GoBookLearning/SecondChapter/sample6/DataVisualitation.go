@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/kniren/gota/dataframe"
+	"gonum.org/v1/plot/plotter"
 )
 
 // Data visualitations to quantify how distributions work!
@@ -28,6 +29,13 @@ func GraphHistogram(pathFile string) {
 
 		// If the column is one of the feature columns, let's
 		// create  a histogram of the values
+
+		if conName != "species" {
+			// Create a plotter.Values value and fill it with the
+			// values from the respective column of the dataframe
+
+			v := make(plotter.Values, IrisDF)
+		}
 	}
 }
 
