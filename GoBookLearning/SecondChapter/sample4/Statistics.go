@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/go-gota/gota/dataframe"
+	"github.com/gonum/gonum/stat"
 	"github.com/montanaflynn/stats"
-	"gonum.org/v1/gonum/stat"
 )
 
 // The goal of an Machine learning application
