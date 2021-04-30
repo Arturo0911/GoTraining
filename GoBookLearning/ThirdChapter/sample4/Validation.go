@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"os"
 
@@ -44,14 +46,39 @@ func DiabetesTest(pathFile string) {
 	trainingDF := diabetesCSV.Subset(trainingIdx)
 	testDF := diabetesCSV.Subset(testIdx)
 
-
 	// cretate a map that will be used in writing the data
 	// to files
 
-	setMap := map[int]]dataframe.DataFrame{
+	setMap := map[int]dataframe.DataFrame{
 		0: trainingDF,
-		1: testDF
+		1: testDF,
 	}
+
+	fmt.Println(setMap)
+
+	// Now, create the respective files
+
+	for idx, setName := range []string{"training.csv", "test.csv"} {
+
+		// Save the fltered dartasete file.
+
+		f, err := os.Create(setName)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Create a buffered writer.
+
+		w := bufio.NewWriter(f)
+
+		//Write the dataframe out as a CSV.
+
+		if err := setMap[idx].WriteCSV(w); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 }
 
 func main() {
