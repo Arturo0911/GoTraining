@@ -36,16 +36,39 @@ const LATITUDE = "-2.335017"
 const LONGITUDE = "-80.229769"
 const WEATHER_KEY = "03f3ae71c48847e7a7e2b0077bf35a76"
 
-func MakingDays() []string {
+func MakingDays(yearInit, monthInit, dayInit, yearEnd, monthEnd, dayEnd int) ([]string, error) {
 
 	daysString := make([]string, 0)
 
-	return daysString
+	var indicator int
+
+	if yearInit == yearEnd {
+
+		if monthEnd < monthInit {
+			return nil, errors.New("the month end cannot be less in the same year")
+		}
+
+		indicator = 0
+	} else {
+		indicator = yearEnd - yearInit
+	}
+
+	if indicator == 0 {
+
+	}
+
+	return daysString, nil
 }
 
 func BuildingUrl(timeStart string, timeEnd string) string {
 
-	return fmt.Sprintf("https://api.weatherbit.io/v2.0/history/hourly?lat=%v&lon=%v&start_date=%v&end_date=%v&tz=local&key=%v", LATITUDE, LONGITUDE, timeStart, timeEnd, WEATHER_KEY)
+	return fmt.Sprintf(
+		"https://api.weatherbit.io/v2.0/history/hourly?lat=%v&lon=%v&start_date=%v&end_date=%v&tz=local&key=%v",
+		LATITUDE,
+		LONGITUDE,
+		timeStart,
+		timeEnd,
+		WEATHER_KEY)
 
 }
 
@@ -96,6 +119,13 @@ func MakingCSVFiles() error {
 
 func main() {
 
-	ConnectAPI()
-	MakingCSVFiles()
+	//ConnectAPI()
+	//MakingCSVFiles()
+	days, err := MakingDays()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(days)
 }
