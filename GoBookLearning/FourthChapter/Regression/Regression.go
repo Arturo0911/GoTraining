@@ -2,11 +2,14 @@ package main
 
 import (
 	"bufio"
+	"encoding/csv"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/go-gota/gota/dataframe"
+	"github.com/sajari/regression"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
@@ -204,9 +207,77 @@ func CreatingDataTraining(pathFile string) {
 
 }
 
+func StartTrainingModel(pathFile string) {
+
+	file, err := os.Open(pathFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// create a new CSV reader reading from the opened file
+
+	reader := csv.NewReader(file)
+
+	// Read in all of the CSV records
+
+	reader.FieldsPerRecord = 4
+
+	trainingData, err := reader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// in this case we are going to try and model our sales(y)
+	// by the TV feature plus an intercep. As such, let's create
+	// the struct needed to train a model using Sajari repository
+
+	var r regression.Regression
+	r.SetObserved("Sales")
+	r.SetVar(0, "TV")
+
+	// Now loop of records in the csv, adding the training
+	// data to the refression value
+
+	for i, record := range trainingData {
+
+		// skip the header
+		if i == 0 {
+			continue
+		}
+
+		// parse the Sales regression measure, or "y"
+
+		yVal, err := strconv.ParseFloat(record[3], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// parse the Tv value.
+
+		tvVal, err := strconv.ParseFloat(record[0], 64)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Add these points to the regression value.
+		r.Train(regression.DataPoint(yVal, []float64{tvVal}))
+	}
+
+	// Train/fit the regression model.
+	r.Run()
+
+	// Output the trained model parameters.
+	fmt.Printf("\nRegression formula: \n%v\n\n", r.Formula)
+
+}
+
 func main() {
-	pathFile := "Advertising.csv"
+	//pathFile := "Advertising.csv"
+	pathTraining := "training.csv"
 	//readingAdvertising(pathFile)
 	//CheckingCorrelation(pathFile)
-	CreatingDataTraining(pathFile)
+	//CreatingDataTraining(pathFile)
+	StartTrainingModel(pathTraining)
 }
