@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 
@@ -207,9 +208,9 @@ func CreatingDataTraining(pathFile string) {
 
 }
 
-func StartTrainingModel(pathFile string) {
+func StartTrainingModel(pathTraining, pathTesting string) {
 
-	file, err := os.Open(pathFile)
+	file, err := os.Open(pathTraining)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -271,13 +272,161 @@ func StartTrainingModel(pathFile string) {
 	// Output the trained model parameters.
 	fmt.Printf("\nRegression formula: \n%v\n\n", r.Formula)
 
+	// Mental checking, if the scatter plots between the TV and
+	// Sales was up and to the right, that's mean, that the
+	// correlation is positive, therefore slope should be positive
+	//		Regression formula:
+	//		Predicted = 7.0688 + TV*0.0489
+
+	testFile, err := os.Open(pathTesting)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer testFile.Close()
+
+	// creating a reder
+
+	testReader := csv.NewReader(testFile)
+	testReader.FieldsPerRecord = 4
+	testData, err := testReader.ReadAll()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// loop over the test data predicting y and evaluating
+	// the prediction with the mean absolute error.
+
+	var mAE float64
+
+	for i, record := range testData {
+
+		// skiping the header
+		if i == 0 {
+			continue
+		}
+
+		// parse the observed Sales or "y"
+
+		yObserved, err := strconv.ParseFloat(record[3], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// parse the TV value.
+		tvVal, err := strconv.ParseFloat(record[0], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// predicted y with our trained model
+		yPredicted, err := r.Predict([]float64{tvVal})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// ADd the to the mean absolute error.
+		mAE += math.Abs(yObserved-yPredicted) / float64(len(testData))
+
+	}
+
+	// Output the MAE to standar out.
+	fmt.Printf("MAE = %0.2f\n\n", mAE)
+
+	/*
+		Regression formula:
+			Predicted = 7.0688 + TV*0.0489
+
+			MAE = 3.01
+
+			How we know if 3.01 is good or bad ?
+			When we show all the values in the dataset
+			The mean sales was 14.02 and the desviation is
+			5.21. Thus, out MAE is less, than standard deviations
+			of our salues values, and is about 20% of the mean
+			value, and our model has some predictive power.
+
+	*/
+
+}
+
+// Without importing the librarie
+func Prediction(tv float64) float64 {
+	return 7.07 + tv*0.05
+}
+
+func MakingPrediction(pathFile string) {
+
+	file, err := os.Open(pathFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	// Create a dataframe from the CSV file.
+	advertDF := dataframe.ReadCSV(file)
+
+	// Extracting the target column
+	yVals := advertDF.Col("Sales").Float()
+
+	// pts will hold the values for plotting.
+	pts := make(plotter.XYs, advertDF.Nrow())
+
+	//ptsPred will hold the predicted values for plotting
+	ptsPred := make(plotter.XYs, advertDF.Nrow())
+
+	// Fill pts with data.
+	for i, floatVal := range advertDF.Col("TV").Float() {
+		pts[i].X = floatVal
+		pts[i].Y = yVals[i]
+
+		ptsPred[i].X = floatVal
+		ptsPred[i].Y = Prediction(floatVal)
+	}
+
+	// creating a plot
+	p := plot.New()
+	p.X.Label.Text = "TV"
+	p.Y.Label.Text = "Sales"
+	p.Add(plotter.NewGrid())
+
+	// Add the scatter plot points for the observations
+	s, err := plotter.NewScatter(pts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s.GlyphStyle.Radius = vg.Points(3)
+
+	//Adding the line plot points for the predictions
+	l, err := plotter.NewLine(ptsPred)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	l.LineStyle.Width = vg.Points(1)
+	l.LineStyle.Dashes = []vg.Length{vg.Points(5), vg.Points(5)}
+
+	// Save the plot to a PNG file.
+	p.Add(s, l)
+
+	if err := p.Save(4*vg.Inch, 4*vg.Inch, "regression_line.png"); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
-	//pathFile := "Advertising.csv"
-	pathTraining := "training.csv"
+	//pathTesting := "test.csv"
+	//pathTraining := "training.csv"
+
+	pathGeneral := "Advertising.csv"
 	//readingAdvertising(pathFile)
 	//CheckingCorrelation(pathFile)
 	//CreatingDataTraining(pathFile)
-	StartTrainingModel(pathTraining)
+	//StartTrainingModel(pathTraining, pathTesting)
+	MakingPrediction(pathGeneral)
 }
