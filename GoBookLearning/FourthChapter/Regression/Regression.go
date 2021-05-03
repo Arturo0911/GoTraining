@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
+// Seting the Y variable as dependent variable
 func CheckingCorrelation(pathFile string) {
 
 	file, err := os.Open(pathFile)
@@ -24,7 +26,7 @@ func CheckingCorrelation(pathFile string) {
 	// Extract the target of the column
 	// chosse the column, and the name
 	yVals := dataCSV.Col("Sales").Float()
-
+	fmt.Println(yVals)
 	// create a scatter a polot for each of the features in the
 	// dataset
 
@@ -56,7 +58,7 @@ func CheckingCorrelation(pathFile string) {
 		}
 
 		s.GlyphStyle.Radius = vg.Points(3)
-
+		p.Add(s)
 		// save the plot to a PNG file
 
 		if err := p.Save(4*vg.Inch, 4*vg.Inch, colName+"_scatter.png"); err != nil {
@@ -66,6 +68,7 @@ func CheckingCorrelation(pathFile string) {
 
 }
 
+// Making plot charts
 func ReadingAdvertising(pathFile string) {
 
 	file, err := os.Open(pathFile)
@@ -129,8 +132,81 @@ func ReadingAdvertising(pathFile string) {
 
 }
 
+// Setting the data to be training and testing
+func CreatingDataTraining(pathFile string) {
+
+	file, err := os.Open(pathFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	advertDF := dataframe.ReadCSV(file)
+
+	// Calculating, number of elements in each set
+
+	traningNum := (4 * advertDF.Nrow()) / 5
+	testNum := advertDF.Nrow() / 5
+
+	if traningNum+testNum < advertDF.Nrow() {
+		traningNum++
+	}
+
+	// creating a subset indices.
+	trainingIdx := make([]int, traningNum)
+	testIdx := make([]int, testNum)
+
+	// Enumerate the traning indices
+
+	for i := 0; i < traningNum; i++ {
+		trainingIdx[i] = i
+	}
+
+	// Enumerate test indices
+	for i := 0; i < testNum; i++ {
+		testIdx[i] = traningNum + i
+	}
+
+	// create a the subset dataframes.
+	// Every subset will cut the data frame in portions
+	// depend of the number of rows that you will set
+	trainingDF := advertDF.Subset(trainingIdx)
+	testDF := advertDF.Subset(testIdx)
+
+	// Create a mapa that will be used in writing the data
+	// to files
+
+	setMap := map[int]dataframe.DataFrame{
+		0: trainingDF,
+		1: testDF,
+	}
+
+	// create the respective files
+
+	for idx, setName := range []string{"training.csv", "test.csv"} {
+
+		// save the filtered dataset file.
+		f, err := os.Create(setName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// create a buffered writer
+		w := bufio.NewWriter(f)
+
+		// Write the daraframe out as a CSV
+
+		if err := setMap[idx].WriteCSV(w); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+}
+
 func main() {
-	pathFile := "../Advertising.csv"
+	pathFile := "Advertising.csv"
 	//readingAdvertising(pathFile)
-	CheckingCorrelation(pathFile)
+	//CheckingCorrelation(pathFile)
+	CreatingDataTraining(pathFile)
 }
