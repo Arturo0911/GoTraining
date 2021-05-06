@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 
@@ -44,7 +45,6 @@ func main() {
 		if idx == 0 {
 			continue
 		}
-		fmt.Println(featureIndex)
 		// loop over the float columns.
 		for i, val := range record {
 			valParsed, err := strconv.ParseFloat(val, 64)
@@ -97,4 +97,67 @@ func main() {
 	fmt.Printf("\nREgression Formula:\n")
 	fmt.Printf("y = %0.3f + %0.3fTV + %0.3f Radio + %0.3f NewsPaper\n\n", c1, c2, c3, c4)
 
+	// Testing the another file
+
+	testFile, err := os.Open("test.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer testFile.Close()
+
+	testReader := csv.NewReader(testFile)
+	testReader.FieldsPerRecord = 4
+
+	// reading all csv lines
+
+	testData, err := testReader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// looping over the houldout data predicting y and
+	// evaluationg the prediction with the mean absoljute error
+
+	var mAE float64
+
+	for i, record := range testData {
+
+		if i == 0 {
+			continue
+		}
+
+		// parsing the sales
+		yObserved, err := strconv.ParseFloat(record[3], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		tvVal, err := strconv.ParseFloat(record[0], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		raVal, err := strconv.ParseFloat(record[1], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		newsVal, err := strconv.ParseFloat(record[3], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Predict y with our trained model.
+		yPredicted := Predict(tvVal, raVal, newsVal)
+		mAE += math.Abs(yObserved-yPredicted) / float64(len(testData))
+
+	}
+
+	fmt.Printf("\nMAE = %0.2f\n\n", mAE)
+
+}
+
+func Predict(tv, radio, newspaper float64) float64 {
+	return (3.038 + tv*0.047 + 0.177*radio + 0.001*newspaper)
 }
