@@ -151,6 +151,20 @@ func main() {
 
 	//trainingFile := "../../loan_data.csv"
 	//MakingLogistict(trainingFile)
+	/*
+		Technique to optimize the coefficient/weights
+		is called stochastic gradient.
+
+		For the implementation of this, we need the following
+		as input:
+
+			features -> A pointer to a mat64.Dense matrix
+			labels -> A slice of floats including all of the class
+			numSteps -> A maximun number of iterations for the
+						implementation.
+			learningRate -> An adjustable parameter that helps
+							with the convergence of the optimization.
+	*/
 
 	readerFile := "new_data_load.csv"
 	UndertandingFile(readerFile)
