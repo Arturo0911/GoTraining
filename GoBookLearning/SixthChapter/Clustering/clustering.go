@@ -22,7 +22,7 @@ func main() {
 
 	// create a dataframe
 	irisDF := dataframe.ReadCSV(irisFile)
-	fmt.Println(irisDF)
+	//fmt.Println(irisDF)
 	// Define the names of the hree separate species
 	// contained in the csv file
 	speciesNames := []string{
@@ -41,6 +41,12 @@ func main() {
 	for _, species := range speciesNames {
 
 		// Filter the original dataset.
+		/*
+			This struct allow the filter method to get comparations
+			between the specific column, in this case
+			 the comparator is == and the colname is species, whtat's
+			  that mean, as we already put in the array species names as comparator
+		*/
 		filter := dataframe.F{
 			Colname:    "species",
 			Comparator: "==",
@@ -50,6 +56,7 @@ func main() {
 		//fmt.Println(filtered)
 		// Calculate the mean of features
 		summaryDF := filtered.Describe()
+		fmt.Println(summaryDF)
 		//fmt.Println(summaryDF.Names())
 		// put each dimension's mean into the corresponding centroid.
 
@@ -61,6 +68,7 @@ func main() {
 			if feature == "column" || feature == "species" {
 				continue
 			}
+			fmt.Println(summaryDF.Col(feature).Float()[0])
 			c = append(c, summaryDF.Col(feature).Float()[0])
 		}
 
@@ -69,11 +77,14 @@ func main() {
 		clusters[species] = filtered
 	}
 
+	//fmt.Println(centroids)
+	//fmt.Println(clusters)
+
 	// As a sanity check, output oour centroids
-	for _, species := range speciesNames {
-		fmt.Printf("%s centroid: %v\n", species, centroids[species])
-		fmt.Printf("\n")
-	}
+	//for _, species := range speciesNames {
+	//	fmt.Printf("%s centroid: %v\n", species, centroids[species])
+	//	fmt.Printf("\n")
+	//}
 
 	// Covert our labels into a slice of strings and create a slice
 	// of float column names for convenience.
