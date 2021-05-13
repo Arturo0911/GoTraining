@@ -77,7 +77,7 @@ func main() {
 
 	// Covert our labels into a slice of strings and create a slice
 	// of float column names for convenience.
-	lables := irisDF.Col("species").Records()
+	labels := irisDF.Col("species").Records()
 	floatColumns := []string{
 		"sepal_length",
 		"sepal_width",
@@ -89,7 +89,7 @@ func main() {
 	// ccoefficient.
 	var silhoutte float64
 
-	for idx, label := range lables {
+	for idx, label := range labels {
 		// a will store our accumulated value for a.
 		var a float64
 
@@ -105,7 +105,52 @@ func main() {
 
 		}
 		// Determine the neares other clluster
+		var otherCluster string
+		var distanceToCluster float64
+
+		for _, species := range speciesNames {
+
+			// skip the cluster containing the data point.
+			if species == label {
+				continue
+			}
+
+			// calculate the distance to the cluster
+			// from the current cluster.
+			distanceForThisCluster := floats.Distance(centroids[label],
+				centroids[species], 2)
+
+			// replace the current cluster if relevant.
+			if distanceToCluster == 0.0 || distanceForThisCluster < distanceToCluster {
+				otherCluster = species
+				distanceToCluster = distanceForThisCluster
+			}
+		}
+
+		// b will be store our accumulated value for b.
+		var b float64
+
+		// loop over the data points in the neares other cluster.
+		for i := 0; i < clusters[otherCluster].Nrow(); i++ {
+
+			// Get the data point for comparison.
+			current := dfFloatRow(irisDF, floatColumns, idx)
+			other := dfFloatRow(clusters[otherCluster], floatColumns, i)
+
+			// Add to b
+			b += floats.Distance(current, other, 2) / float64(clusters[otherCluster].Nrow())
+		}
+
+		// ADd to the average silhouette coefficient
+		if a > b {
+			silhoutte += ((b - a) / a) / float64(len(labels))
+		}
+
+		silhoutte += ((b - a) / b) / float64(len(labels))
 	}
+
+	// Output the final average silhouette coeffcient to stdout
+	fmt.Printf("\nAverage silhouette coefficient: %0.2f\n\n", silhoutte)
 
 }
 
