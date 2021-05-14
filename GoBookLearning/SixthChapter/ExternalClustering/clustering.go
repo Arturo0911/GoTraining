@@ -252,6 +252,25 @@ func EvaluatingClusters() {
 	if err := p.Save(4*vg.Inch, 4*vg.Inch, "fleet_data_clusters.png"); err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Printf("\nCluster 1 metric: %0.2f\n", WithinClusterMean(clusterOne,
+		[]float64{50.05, 8.83}))
+	fmt.Printf("\nCluster 2 metric: %0.2f\n", WithinClusterMean(clusterTwo,
+		[]float64{180.02, 18.29}))
+
+}
+
+func WithinClusterMean(cluster [][]float64, centroids []float64) float64 {
+	// MeanDistance will hold our result
+	var meanDistance float64
+
+	// loop over the points in the cluster
+
+	for _, point := range cluster {
+		meanDistance += floats.Distance(point, centroids, 2)
+	}
+
+	return meanDistance
 }
 
 func main() {
