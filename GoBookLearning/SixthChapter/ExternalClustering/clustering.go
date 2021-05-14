@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-gota/gota/dataframe"
 	"github.com/mash/gokmeans"
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
@@ -179,9 +180,59 @@ func GeneratingClusters() {
 	}
 }
 
+func EvaluatingClusters() {
+	file, err := os.Open(pathFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// Reading dataFrame
+	driverDF := dataframe.ReadCSV(file)
+
+	// Extracting the distance
+	yVals := driverDF.Col("Distance_Feature").Float()
+
+	// As we already make two clusters in the above function
+	// We need to hold tww kind of clusters in something like
+	// tensors or [][]float64
+	var clusterOne [][]float64
+	var clusterTwo [][]float64
+
+	// fill the clusters with data
+	for i, xVal := range driverDF.Col("Speeding_Feature").Float() {
+
+		distanceOne := floats.Distance([]float64{yVals[i], xVal},
+			[]float64{50.05, 8.83}, 2)
+		distanceTwo := floats.Distance([]float64{yVals[i], xVal},
+			[]float64{180.02, 18.29}, 2)
+
+		if distanceOne < distanceTwo {
+			clusterOne = append(clusterOne, []float64{xVal, yVals[i]})
+			continue
+		}
+		clusterTwo = append(clusterTwo, []float64{xVal, yVals[i]})
+	}
+
+	// pts* will hodl the values for plotting
+	ptsOne := make(plotter.XYs, len(clusterOne))
+	ptsTwo := make(plotter.XYs, len(clusterTwo))
+
+	for i, point := range clusterOne {
+		ptsOne[i].X = point[0]
+		ptsOne[i].Y = point[1]
+	}
+
+	for i, point := range clusterTwo {
+		ptsTwo[i].X = point[0]
+		ptsTwo[i].Y = point[1]
+	}
+}
+
 func main() {
 
 	//Histogram()
 	//NewPlotting()
-	GeneratingClusters()
+	//GeneratingClusters()
+	EvaluatingClusters()
 }
