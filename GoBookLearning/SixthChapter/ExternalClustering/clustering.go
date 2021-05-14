@@ -15,6 +15,7 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
 )
 
 const pathFile = "../datasets/fleet_data.csv"
@@ -226,6 +227,30 @@ func EvaluatingClusters() {
 	for i, point := range clusterTwo {
 		ptsTwo[i].X = point[0]
 		ptsTwo[i].Y = point[1]
+	}
+
+	p := plot.New()
+	p.X.Label.Text = "Spedding"
+	p.Y.Label.Text = "Distance"
+	p.Add(plotter.NewGrid())
+
+	sOne, err := plotter.NewScatter(ptsOne)
+	if err != nil {
+		log.Fatal(err)
+	}
+	sOne.GlyphStyle.Radius = vg.Points(3)
+	sOne.GlyphStyle.Shape = draw.PyramidGlyph{}
+
+	sTwo, err := plotter.NewScatter(ptsTwo)
+	if err != nil {
+		log.Fatal(err)
+	}
+	sTwo.GlyphStyle.Radius = vg.Points(3)
+	sTwo.GlyphStyle.Shape = draw.PyramidGlyph{}
+
+	p.Add(sOne, sTwo)
+	if err := p.Save(4*vg.Inch, 4*vg.Inch, "fleet_data_clusters.png"); err != nil {
+		log.Fatal(err)
 	}
 }
 
