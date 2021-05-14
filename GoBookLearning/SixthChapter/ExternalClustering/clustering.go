@@ -1,12 +1,16 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"image/color"
+	"io"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/go-gota/gota/dataframe"
+	"github.com/mash/gokmeans"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
@@ -107,8 +111,77 @@ func NewPlotting() {
 
 }
 
+func GeneratingClusters() {
+
+	f, err := os.Open(pathFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	r := csv.NewReader(f)
+	r.FieldsPerRecord = 3
+
+	// Initialize a slice of gokmeans.Node to
+	// hold our input data
+	var data []gokmeans.Node
+
+	// loop over the records creating our slice of
+	for {
+
+		// Read in our record and check for erros
+		record, err := r.Read()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// skip the header
+		if record[0] == "Driver_ID" {
+			continue
+		}
+
+		// Initialize a point
+		var point []float64
+
+		// Fill in our point
+		for i := 1; i < 3; i++ {
+
+			val, err := strconv.ParseFloat(record[i], 64)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			// Append this value to our point
+			point = append(point, val)
+		}
+
+		// Append the point to the data
+		data = append(data, gokmeans.Node{point[0], point[1]})
+
+	}
+	// Then generating our clusters is as easy as calling
+	// the gomeans.Train(...)
+	success, centroids := gokmeans.Train(data, 2, 50)
+	fmt.Println(success)
+	if !success {
+		log.Fatal("Couldn't generate clusters")
+	}
+
+	fmt.Printf("\nThe centroids for our clusters are: ")
+
+	for _, cendroid := range centroids {
+		fmt.Println(cendroid)
+	}
+}
+
 func main() {
 
 	//Histogram()
-	NewPlotting()
+	//NewPlotting()
+	GeneratingClusters()
 }
