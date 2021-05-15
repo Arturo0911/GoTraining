@@ -8,6 +8,9 @@ import (
 
 	"github.com/kniren/gota/dataframe"
 	"github.com/sajari/regression"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 const pathFile = "../AirPassengers.csv"
@@ -61,7 +64,7 @@ func Reading() {
 	passendDF := dataframe.ReadCSV(file)
 
 	// Get the time and passeners as a slice of floats
-	passengers := passendDF.Col("AitPassengers").Float()
+	passengers := passendDF.Col("AirPassengers").Float()
 
 	// loop over various calues of lag in the series
 	fmt.Println("Partial Autocorrelation")
@@ -74,6 +77,44 @@ func Reading() {
 	}
 }
 
+func MakingPlotts() {
+	file, err := os.Open(pathFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	passDF := dataframe.ReadCSV(file)
+
+	passengers := passDF.Col("AirPassengers").Float()
+
+	p := plot.New()
+	p.X.Label.Text = "LAG"
+	p.Y.Label.Text = "PACF"
+	p.Y.Min = 0
+	p.Y.Max = 0
+
+	w := vg.Points(3)
+
+	numLags := 20
+
+	pts := make(plotter.Values, numLags)
+
+	for i := 1; i < numLags; i++ {
+		pts[i-1] = PACF(passengers, i)
+	}
+	bars, err := plotter.NewBarChart(pts, w)
+	if err != nil {
+		log.Fatal(err)
+	}
+	p.Add(bars)
+
+	if err := p.Save(8*vg.Inch, 4*vg.Inch, "PACF_bars.png"); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
-	Reading()
+	//Reading()
+	MakingPlotts()
 }
