@@ -1,16 +1,22 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 
 	"github.com/go-gota/gota/dataframe"
 	"github.com/sajari/regression"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 const pathFile = "log_diff_series.csv"
+const passFile = "../AirPassengers.csv"
 
 func autoregressive(x []float64, lag int) ([]float64, float64) {
 
@@ -64,7 +70,7 @@ func readerFile() {
 	defer file.Close()
 
 	passDF := dataframe.ReadCSV(file)
-	passengerValues := passDF.Col("differenced_passengers").Float()
+	passengerValues := passDF.Col("log_differenced_passengers").Float()
 
 	// Calculate the coefficients.
 	coeffs, intercept := autoregressive(passengerValues, 2)
@@ -73,7 +79,135 @@ func readerFile() {
 
 }
 
+func maeError() {
+	transFile, err := os.Open(pathFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer transFile.Close()
+
+	transReader := csv.NewReader(transFile)
+	transReader.FieldsPerRecord = 2
+	transdata, err := transReader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Looping over the data predicting the transformed
+	var transPredictions []float64
+	for i := range transdata {
+
+		// skip the header and the first two observations
+		// because we need two lags to make predictions
+		if i == 0 || i == 1 || i == 2 {
+			continue
+		}
+
+		// Parse the firs lag.
+		lagOne, err := strconv.ParseFloat(transdata[i-1][1], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Parse the second lag.
+		lagTwo, err := strconv.ParseFloat(transdata[i-2][1], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Predict the transformed variable with our trained AR model
+
+		transPredictions = append(transPredictions,
+			0.008159+0.234953*lagOne-0.173682*lagTwo)
+	}
+
+	// Open the original dataset file.
+	origFile, err := os.Open(passFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer origFile.Close()
+
+	// Create a csv reader reading from the opened file
+	origReader := csv.NewReader(origFile)
+	origReader.FieldsPerRecord = 2
+
+	origData, err := origReader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// pts* will hold the values for plotting
+	ptsObs := make(plotter.XYs, len(transPredictions))
+	ptsPred := make(plotter.XYs, len(transPredictions))
+
+	// Reverse the transformation and calculate the MAE
+	var mAE float64
+	var cumSum float64
+	fmt.Println(len(origData) - 1)
+	for i := 4; i <= len(origData)-1; i++ {
+
+		// Parse the original observation.
+		observed, err := strconv.ParseFloat(origData[i][1], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Parse the original date.
+		date, err := strconv.ParseFloat(origData[i][0], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Get the cumulative sum up to the index in
+		// the transformed predictions.
+		cumSum += transPredictions[i-4]
+
+		// Calculate the reverse transformed prediction.
+		predicted := math.Exp(math.Log(observed) + cumSum)
+
+		// Accumulate the MAE.
+		mAE += math.Abs(observed-predicted) / float64(len(transPredictions))
+
+		// Fill in the points for plotting.
+		ptsObs[i-4].X = date
+		ptsPred[i-4].X = date
+		ptsObs[i-4].Y = observed
+		ptsPred[i-4].Y = predicted
+	}
+	// printing the MAE
+	fmt.Printf("\nMAE = %0.2f\n\n", mAE)
+
+	p := plot.New()
+	p.X.Label.Text = "time"
+	p.Y.Label.Text = "passengers"
+	p.Add(plotter.NewGrid())
+
+	lObs, err := plotter.NewLine(ptsObs)
+	if err != nil {
+		log.Fatal(err)
+	}
+	lObs.LineStyle.Width = vg.Points(1)
+
+	lPred, err := plotter.NewLine(ptsPred)
+	if err != nil {
+		log.Fatal(err)
+	}
+	lPred.LineStyle.Width = vg.Points(1)
+	lPred.LineStyle.Dashes = []vg.Length{vg.Points(5), vg.Points(5)}
+
+	// Save the plot to a png file
+	p.Add(lObs, lPred)
+	p.Legend.Add("Observed", lObs)
+	p.Legend.Add("Predicted", lPred)
+	if err := p.Save(10*vg.Inch, 4*vg.Inch, "passengers_ts.png"); err != nil {
+		log.Fatal(err)
+	}
+
+}
+
 func main() {
 
 	readerFile()
+	maeError()
 }
