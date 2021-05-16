@@ -77,13 +77,14 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 
 	// Define the output of the neural network.
 	var output mat.Dense
-	fmt.Println(output)
+	//fmt.Println(output)
 
 	// Loop over the number of epochs utilizing
 	// backpropagration to train our model.
 	for i := 0; i < nn.config.numEpochs; i++ {
 
 		var hiddenLayerInput mat.Dense
+		//fmt.Println(hiddenLayerInput)
 		hiddenLayerInput.Mul(x, wHidden)
 		addBHidden := func(_, col int,
 			v float64) float64 {
@@ -177,6 +178,7 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 		if err != nil {
 			return err
 		}
+		//fmt.Println(bHiddenAdj)
 		bHiddenAdj.Scale(nn.config.learningRate, bHiddenAdj)
 		bHidden.Add(bHidden, bHiddenAdj)
 
@@ -243,6 +245,9 @@ func main() {
 		1.0, 0.0, 1.0, 1.0,
 		0.0, 1.0, 0.0, 1.0,
 	})
+	fmt.Println(input.Dims())
+	fmt.Println(input)
+	fmt.Println(input.Caps())
 
 	// Define our labels
 	labels := mat.NewDense(3, 1, []float64{1.0, 1.0, 0.0})
@@ -276,5 +281,6 @@ func main() {
 	f = mat.Formatted(network.bOut, mat.Prefix(" "))
 	fmt.Printf("\nbOut = %v \n\n", f)
 
-	fmt.Println(input)
+	//fmt.Println(input)
+
 }
