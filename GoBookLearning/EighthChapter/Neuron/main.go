@@ -1,16 +1,21 @@
 package main
 
 import (
+	"encoding/csv"
 	"errors"
-	"fmt"
 	"log"
 	"math"
 	"math/rand"
+	"os"
+	"strconv"
 	"time"
 
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
+
+const trainFile = "../train.csv"
+const testFile = "../test.csv"
 
 // NeuralNet contains all of the information
 // that defines a trained neural network
@@ -239,15 +244,12 @@ func main() {
 
 	*/
 
-	// Define our input attributes.
+	/*// Define our input attributes.
 	input := mat.NewDense(3, 4, []float64{
 		1.0, 0.0, 1.0, 0.0,
 		1.0, 0.0, 1.0, 1.0,
 		0.0, 1.0, 0.0, 1.0,
 	})
-	fmt.Println(input.Dims())
-	fmt.Println(input)
-	fmt.Println(input.Caps())
 
 	// Define our labels
 	labels := mat.NewDense(3, 1, []float64{1.0, 1.0, 0.0})
@@ -269,18 +271,128 @@ func main() {
 	}
 
 	// output the weights that define our network!
-	f := mat.Formatted(network.wHidden, mat.Prefix(" "))
-	fmt.Printf("\nwHidden = %v \n\n", f)
+	f := mat.Formatted(network.wHidden, mat.Prefix(" "), mat.Excerpt(0))
+	fmt.Printf("\nwHidden = \n%v \n\n", f)
 
-	f = mat.Formatted(network.bHidden, mat.Prefix(" "))
-	fmt.Printf("\nbHidden = %v \n\n", f)
+	f = mat.Formatted(network.bHidden, mat.Prefix(" "), mat.Excerpt(0))
+	fmt.Printf("\nbHidden = \n%v \n\n", f)
 
-	f = mat.Formatted(network.wOut, mat.Prefix(" "))
-	fmt.Printf("\nwOut = %v \n\n", f)
+	f = mat.Formatted(network.wOut, mat.Prefix(" "), mat.Excerpt(0))
+	fmt.Printf("\nwOut = \n%v \n\n", f)
 
-	f = mat.Formatted(network.bOut, mat.Prefix(" "))
+	f = mat.Formatted(network.bOut, mat.Prefix(" "), mat.Excerpt(0))
 	fmt.Printf("\nbOut = %v \n\n", f)
 
-	//fmt.Println(input)
+	fmt.Printf("A matrix: \n%v\n\n", mat.Formatted(input, mat.Prefix(" "), mat.Excerpt(0)))
+	*/
 
+	file, err := os.Open(trainFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// Create a new CSV reader reading form the opened file.
+	reader := csv.NewReader(file)
+	reader.FieldsPerRecord = 7
+
+	// Reading all the data
+	rawData, err := reader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// inputsData and labelsDAta will hold all the
+	// float values taht will eventually be
+	// used to form our matrices.
+
+	inputData := make([]float64, 4*len(rawData))
+	labelsData := make([]float64, 3*len(rawData))
+
+	// InputsIndex will track the current index of
+	// inputs matrix values.
+	var inputsIndex int
+	var labelsIndex int
+
+	// Sequentially move the rows into a slice of floats.
+	for idx, record := range rawData {
+
+		// Wkiping the header row
+		if idx == 0 {
+			continue
+		}
+
+		// Loop over the float columns.
+		for i, val := range record {
+
+			// covnert the value to a float.
+			parsedVal, err := strconv.ParseFloat(val, 64)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			// Add to the labelsData if relevant
+			if i == 4 || i == 5 || i == 6 {
+				labelsData[labelsIndex] = parsedVal
+				labelsIndex++
+				continue
+			}
+
+			// Add the float value to the slice of floats.
+			inputData[inputsIndex] = parsedVal
+			inputsIndex++
+		}
+	}
+
+	// Form the matrices.
+	inputs := mat.NewDense(len(rawData), 4, inputData)
+	labels := mat.NewDense(len(rawData), 3, labelsData)
+
+	config := neuralNetConfig{
+		inputNeurons:  4,
+		outputNeurons: 3,
+		hiddenNeurons: 3,
+		numEpochs:     5000,
+		learningRate:  0.3,
+	}
+
+	// Train the neural network
+	network := newNetwork(config)
+	if err := network.train(inputs, labels); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Predict makes a predictions based on a trained
+// neural network
+func (nn *neuralNet) predict(x *mat.Dense) (*mat.Dense, error) {
+
+	// Check to make sure that our neuralNet value
+	// Represents a trained model.
+	if nn.wHidden == nil || nn.wOut == nil || nn.bHidden == nil || nn.bOut == nil {
+		return nil, errors.New("the supplied neural net weights and biases are empty")
+	}
+
+	// Define the output of the neural network.
+	var output mat.Dense
+
+	// Complete the feed forward process.
+
+	var hiddenLayerInput mat.Dense
+	hiddenLayerInput.Mul(x, nn.wHidden)
+	addBHidded := func(_, col int, v float64) float64 { return v + nn.bHidden.At(0, col) }
+	hiddenLayerInput.Apply(addBHidded, &hiddenLayerInput)
+
+	var hiddenLayerActivations mat.Dense
+	applySigmoid := func(_, _ int, v float64) float64 { return sigmoid(v) }
+	hiddenLayerActivations.Apply(applySigmoid, &hiddenLayerInput)
+
+	var outputLayerInput mat.Dense
+	outputLayerInput.Mul(&hiddenLayerActivations, nn.wOut)
+	addBOut := func(_, col int, v float64) float64 { return v + nn.bOut.At(0, col) }
+	outputLayerInput.Apply(addBOut, &outputLayerInput)
+
+	output.Apply(applySigmoid, &outputLayerInput)
+
+	return &output, nil
 }
