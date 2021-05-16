@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"errors"
+	"fmt"
 	"log"
 	"math"
 	"math/rand"
@@ -111,20 +112,18 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 		outputLayerInput.Apply(addBOut, &outputLayerInput)
 		output.Apply(applySigmoid, &outputLayerInput)
 
-		//	 _                _
-		//	| |              | |
-		//	| |__   __ _  ___| | __
-		//	| '_ \ / _` |/ __| |/ /
-		//	| |_) | (_| | (__|   <
-		//	|_.__/ \__,_|\___|_|\_\
-		//										     _    _
-		//										    | |  (_)
-		//	 _ __  _ __ ___  _ __   __ _  __ _  __ _| |_ _  ___  _ __
-		//	| '_ \| '__/ _ \| '_ \ / _` |/ _` |/ _` | __| |/ _ \| '_ \
-		//	| |_) | | | (_) | |_) | (_| | (_| | (_| | |_| | (_) | | | |
-		//	| .__/|_|  \___/| .__/ \__,_|\__, |\__,_|\__|_|\___/|_| |_|
-		//	| |             | |           __/ |
-		//	|_|             |_|          |___/
+		//
+		//	888888b.                  888     	8888888b.                                                888   d8b
+		//	888  "88b                 888     	888   Y88b                                               888   Y8P
+		//	888  .88P                 888     	888    888                                               888
+		//	8888888K.  8888b.  .d8888b888  888	888   d88P888d888 .d88b. 88888b.  8888b.  .d88b.  8888b. 888888888 .d88b. 88888b.
+		//	888  "Y88b    "88bd88P"   888 .88P	8888888P" 888P"  d88""88b888 "88b    "88bd88P"88b    "88b888   888d88""88b888 "88b
+		//	888    888.d888888888     888888K 	888       888    888  888888  888.d888888888  888.d888888888   888888  888888  888
+		//	888   d88P888  888Y88b.   888 "88b	888       888    Y88..88P888 d88P888  888Y88b 888888  888Y88b. 888Y88..88P888  888
+		//	8888888P" "Y888888 "Y8888P888  888	888       888     "Y88P" 88888P" "Y888888 "Y88888"Y888888 "Y888888 "Y88P" 888  888
+		//	                                  	                         888                  888
+		//	                                  	                         888             Y8b d88P
+		//	                                  	                         888              "Y88P"
 
 		var networkError mat.Dense
 		networkError.Sub(y, &output)
@@ -145,22 +144,18 @@ func (nn *neuralNet) train(x, y *mat.Dense) error {
 		var dHiddenLayer mat.Dense
 		dHiddenLayer.MulElem(&errorAtHiddenLayer, &slopeHiddenLayer)
 
-		//				 _ _           _
-		//		/\      | (_)         | |
-		//	   /  \   __| |_ _   _ ___| |_
-		//	  / /\ \ / _` | | | | / __| __|
-		//	 / ____ \ (_| | | |_| \__ \ |_
-		//	/_/    \_\__,_| |\__,_|___/\__|
-		//				 _/ |
-		//				|__/
-		//										 _
-		//										| |
-		//	_ __   __ _ _ __ __ _ _ __ ___   ___| |_ ___ _ __ ___
-		//	| '_ \ / _` | '__/ _` | '_ ` _ \ / _ \ __/ _ \ '__/ __|
-		//	| |_) | (_| | | | (_| | | | | | |  __/ ||  __/ |  \__ \
-		//	| .__/ \__,_|_|  \__,_|_| |_| |_|\___|\__\___|_|  |___/
-		//	| |
-		//	|_|
+		//
+		//         d8888     888  d8b                888   		                                                    888
+		//        d88888     888  Y8P                888   		                                                    888
+		//       d88P888     888                     888   		                                                    888
+		//      d88P 888 .d88888 8888888  888.d8888b 888888		88888b.  8888b. 888d888 8888b. 88888b.d88b.  .d88b. 888888 .d88b. 888d888.d8888b
+		//     d88P  888d88" 888 "888888  88888K     888   		888 "88b    "88b888P"      "88b888 "888 "88bd8P  Y8b888   d8P  Y8b888P"  88K
+		//    d88P   888888  888  888888  888"Y8888b.888   		888  888.d888888888    .d888888888  888  88888888888888   88888888888    "Y8888b.
+		//   d8888888888Y88b 888  888Y88b 888     X88Y88b. 		888 d88P888  888888    888  888888  888  888Y8b.    Y88b. Y8b.    888         X88
+		//  d88P     888 "Y88888  888 "Y88888 88888P' "Y888		88888P" "Y888888888    "Y888888888  888  888 "Y8888  "Y888 "Y8888 888     88888P'
+		//		   				  888                      		888
+		//		   			     d88P                      		888
+		//		   			   888P"                       		888
 
 		var wOudAdj mat.Dense
 		wOudAdj.Mul(hiddenLayerActivations.T(), &dOutput)
@@ -361,6 +356,92 @@ func main() {
 	if err := network.train(inputs, labels); err != nil {
 		log.Fatal(err)
 	}
+
+	/*TESTING MODEL*/
+	testFile, err := os.Open(testFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer testFile.Close()
+	testReader := csv.NewReader(testFile)
+	testReader.FieldsPerRecord = 7
+
+	testData, err := testReader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	TinputData := make([]float64, 4*len(testData))
+	TlabelsData := make([]float64, 3*len(testData))
+
+	// InputsIndex will track the current index of
+	// inputs matrix values.
+	inputsIndex = 0
+	labelsIndex = 0
+
+	for idx, colRecord := range testData {
+
+		if idx == 0 {
+			continue
+		}
+
+		for i, col := range colRecord {
+
+			// Parsing values
+			parsVal, err := strconv.ParseFloat(col, 64)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			// Add the labelsData if it's relevant
+			if i == 4 || i == 5 || i == 6 {
+				TlabelsData[labelsIndex] = parsVal
+				labelsIndex++
+				continue
+			}
+
+			// Add the float value to the slices
+			TinputData[inputsIndex] = parsVal
+			inputsIndex++
+		}
+	}
+
+	testInputs := mat.NewDense(len(testData), 4, TinputData)
+	testLabels := mat.NewDense(len(testData), 3, TlabelsData)
+
+	// Make the predictions using the trained model.
+	predictions, err := network.predict(testInputs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Calculate the accuraccy
+	var truePosNeg int
+	numPreds, _ := predictions.Dims()
+	for i := 0; i < numPreds; i++ {
+
+		// Get the label.
+		labelRow := mat.Row(nil, i, testLabels)
+		var species int
+		for idx, label := range labelRow {
+			if label == 1.0 {
+				species = idx
+				break
+			}
+		}
+
+		// Accumulate the true positive/negative count.
+		if predictions.At(i, species) == floats.Max(mat.Row(nil, i, predictions)) {
+			truePosNeg++
+		}
+	}
+
+	// Calculate te accuracy (subset accuracy).
+	accuracy := float64(truePosNeg) / float64(numPreds)
+
+	// output the accuracy value
+	fmt.Printf("\nAccuracy = %0.5f\n\n", accuracy)
+
 }
 
 // Predict makes a predictions based on a trained
