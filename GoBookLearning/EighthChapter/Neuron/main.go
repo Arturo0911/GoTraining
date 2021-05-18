@@ -15,8 +15,8 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-const trainFile = "../train.csv"
-const testFile = "../test.csv"
+const trainFile = "../data/train.csv"
+const testFile = "../data/test.csv"
 
 // NeuralNet contains all of the information
 // that defines a trained neural network
