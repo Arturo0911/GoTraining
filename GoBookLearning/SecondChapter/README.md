@@ -1,2 +1,0 @@
-Matrix, probability and statistics
-=================================
